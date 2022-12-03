@@ -114,11 +114,11 @@ export function isResolvingGraphQLField(context: ExecutionContext): boolean {
 
 Nest provides two official drivers out-of-the-box: `@nestjs/apollo` and `@nestjs/mercurius`, as well as an API allowing developers to build new **custom drivers**. With a custom driver, you can integrate any GraphQL library or extend the existing integration, adding extra features on top.
 
-For example, to integrate the `express-graphql` package, you could create the following driver class:
+For example, to integrate the `graphql-http` package, you could create the following driver class:
 
 ```typescript
 import { AbstractGraphQLDriver, GqlModuleOptions } from '@nestjs/graphql';
-import { graphqlHTTP } from 'express-graphql';
+import { createHandler } from 'graphql-http/lib/use/express';
 
 class ExpressGraphQLDriver extends AbstractGraphQLDriver {
   async start(options: GqlModuleOptions<any>): Promise<void> {
@@ -127,9 +127,11 @@ class ExpressGraphQLDriver extends AbstractGraphQLDriver {
     const { httpAdapter } = this.httpAdapterHost;
     httpAdapter.use(
       '/graphql',
-      graphqlHTTP({
+      createHandler({
         schema: options.schema,
-        graphiql: true,
+        context(req) {
+          return { req };
+        }
       }),
     );
   }
